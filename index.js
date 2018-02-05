@@ -9,7 +9,7 @@ app.use(bodyparser.urlencoded({
 }));
 app.use(bodyparser.json());
 mongoose.connect('mongodb://localhost/users');
-app.post('/user', function(req, res){
+app.post('/CreateNewuser', function(req, res){
     bcrypt.hash(req.body.Password, 9 ,function(err, hash){
         if(err){
             return res.json(err)
@@ -32,7 +32,7 @@ app.post('/login', function(req, res){
     let userCriteria = {
         Email : req.body.Email
     };
-    user.findOne(userCriteria, function(err, record){
+    user.findOne(userCriteria,(err, record)=>{
         if(err){
             return res.json(err)
             }
@@ -40,9 +40,11 @@ app.post('/login', function(req, res){
         {
             bcrypt.compare(req.body.Password,record.Password,(err,result)=>{
                 if(result){
-                    var token = jwt.sign({id: user._id}, "name", { expiresIn: 86400 });
-                    // return res.json(record)
-                    return res.json({ auth: true, token: token })
+                    return res.json({
+                      data : result,
+                      status : 200,
+                      message  : "login sucessfully"
+                     })
                 }
                 return res.json(err)
             })
@@ -50,7 +52,7 @@ app.post('/login', function(req, res){
     });
 });
 
-app.get('/user', function(req, res){
+app.get('/GetAlluser', function(req, res){
     user.find({}, function(err, record){
         if(err){
             return res.json(err)
@@ -66,9 +68,7 @@ app.get('/userid', function(req, res) {
       return res.json(decoded);
     });
   });
-
-
-app.put('/user', function(req, res){
+app.put('/userUpdate', function(req, res){
     let preCriteria = req.body.ID;
     let criteria = {
         _id  : preCriteria
@@ -80,13 +80,18 @@ app.put('/user', function(req, res){
     };
     user.update( criteria, updatedRecords, function(err, record){
         if(err){
+          console.log(err);
             return res.json(err)
         }
-        return res.json(record)
-    })
-}); 
+        return res.json({
+          status :200,
+          message : "Record sucessfully updated"
+        })
 
-app.delete('/user', function(req, res){
+    })
+});
+
+app.delete('/userDelete', function(req, res){
     let preCriteria = req.body.ID;
     let criteria = {
         _id  : preCriteria
@@ -95,7 +100,10 @@ app.delete('/user', function(req, res){
         if(err){
             return res.json(err)
         }
-        return res.json(record)
+        return res.json({
+          status : 200,
+          message : "user record delete sucessfully"
+        })
     })
 });
 
