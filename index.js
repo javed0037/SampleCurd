@@ -84,7 +84,7 @@ app.put('/user', function(req, res){
         }
         return res.json(record)
     })
-});
+}); 
 
 app.delete('/user', function(req, res){
     let preCriteria = req.body.ID;
