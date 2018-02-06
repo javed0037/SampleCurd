@@ -1,6 +1,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
+var jwt = require('jsonwebtoken');
 var app =  express();
 var bodyparser = require('body-parser');
 const user = require('./models/user');
@@ -27,12 +28,11 @@ app.post('/CreateNewuser', function(req, res){
         });
     });
 });
-
 app.post('/login', function(req, res){
     let userCriteria = {
         Email : req.body.Email
     };
-    user.findOne(userCriteria,(err, record)=>{
+    user.findOne(userCriteria, function(err, record){
         if(err){
             return res.json(err)
             }
@@ -40,17 +40,40 @@ app.post('/login', function(req, res){
         {
             bcrypt.compare(req.body.Password,record.Password,(err,result)=>{
                 if(result){
-                    return res.json({
-                      data : result,
-                      status : 200,
-                      message  : "login sucessfully"
-                     })
+                    var token = jwt.sign({id: user._id}, "name", { expiresIn: 86400 });
+                    // return res.json(record)
+                    return res.json({ auth: true, token: token })
                 }
                 return res.json(err)
             })
         }
     });
 });
+
+
+// app.post('/login', function(req, res){
+//     let userCriteria = {
+//         Email : req.body.Email
+//     };
+//     user.findOne(userCriteria,(err, record)=>{
+//         if(err){
+//             return res.json(err)
+//             }
+//         if(record)
+//         {
+//             bcrypt.compare(req.body.Password,record.Password,(err,result)=>{
+//                 if(result){
+//                     return res.json({
+//                       data : result,
+//                       status : 200,
+//                       message  : "login sucessfully"
+//                      })
+//                 }
+//                 return res.json(err)
+//             })
+//         }
+//     });
+// });
 
 app.get('/GetAlluser', function(req, res){
     user.find({}, function(err, record){
